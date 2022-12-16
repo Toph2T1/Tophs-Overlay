@@ -25,4 +25,5 @@ Current display options:
 - Actual Date
 - Loaded Entity Counts (Peds, Vehicles, Objects, Pickups)
 - Current XYZ Co-Ordinates
+- Current Interior ID
 - Current Heading (Direction)
