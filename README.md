@@ -5,6 +5,7 @@ Current display options:
 - FPS
 - Session Type (Singleplayer, Public, Solo, Invite Only, Friends Only, Crew Only) 
 - Current Session Host
+- Next Session Host
 - Current Script Host
 - Session Hidden Status
 - Player Count
@@ -24,6 +25,8 @@ Current display options:
 - Actual Time
 - Actual Date
 - Loaded Entity Counts (Peds, Vehicles, Objects, Pickups)
+- Closest Player
 - Current XYZ Co-Ordinates
+- Current Street Info
 - Current Interior ID
 - Current Heading (Direction)
