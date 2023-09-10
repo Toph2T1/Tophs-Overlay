@@ -36,7 +36,7 @@ All Displayable Options as of v1.7.0
 - Computer Date
 - Loaded Entities
 - Closest Player (to you)
-- Furthers Player (from you)
+- Furtherst Player (from you)
 - Current XYZ Position
 - Height Above Sea
 - Height Above Ground
