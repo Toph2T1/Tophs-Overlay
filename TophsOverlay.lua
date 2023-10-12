@@ -9,7 +9,7 @@ local function RGBAToInt(R, G, B, A)
 	return ((R&0x0ff)<<0x00)|((G&0x0ff)<<0x08)|((B&0x0ff)<<0x10)|((A&0x0ff)<<0x18)
 end
 
-function addCommasToNumber(number, seperator)
+local function addCommasToNumber(number, seperator)
     local formattedNumber = tostring(number)
     local parts = {}
     
@@ -25,97 +25,165 @@ function addCommasToNumber(number, seperator)
     return table.concat(reversedParts, seperator)
 end
 
+local function calculatePercentage(minValue, maxValue, currentValue)
+    if minValue >= maxValue then
+        return 0
+    end
+    
+    if currentValue <= minValue then
+        return 0
+    elseif currentValue >= maxValue then
+        return 100
+    else
+        return ((currentValue - minValue) / (maxValue - minValue)) * 100
+    end
+end
+
 
 local zones = {
-    AIRP = "Los Santos International Airport",
-    ALAMO = "Alamo Sea",
-    ALTA = "Alta",
-    ARMYB = "Fort Zancudo",
-    BANHAMC = "Banham Canyon Dr",
-    BANNING = "Banning",
-    BEACH = "Vespucci Beach",
-    BHAMCA = "Banham Canyon",
-    BRADP = "Braddock Pass",
-    BRADT = "Braddock Tunnel",
-    BURTON = "Burton",
-    CALAFB = "Calafia Bridge",
-    CANNY = "Raton Canyon",
-    CCREAK = "Cassidy Creek",
-    CHAMH = "Chamberlain Hills",
-    CHIL = "Vinewood Hills",
-    CHU = "Chumash",
-    CMSW = "Chiliad Mountain State Wilderness",
-    CYPRE = "Cypress Flats",
-    DAVIS = "Davis",
-    DELBE = "Del Perro Beach",
-    DELPE = "Del Perro",
-    DELSOL = "La Puerta",
-    DESRT = "Grand Senora Desert",
-    DOWNT = "Downtown",
-    DTVINE = "Downtown Vinewood",
-    EAST_V = "East Vinewood",
-    EBURO = "El Burro Heights",
-    ELGORL = "El Gordo Lighthouse",
-    ELYSIAN = "Elysian Island",
-    GALFISH = "Galilee",
-    GOLF = "GWC and Golfing Society",
-    GRAPES = "Grapeseed",
-    GREATC = "Great Chaparral",
-    HARMO = "Harmony",
-    HAWICK = "Hawick",
-    HORS = "Vinewood Racetrack",
-    HUMLAB = "Humane Labs and Research",
-    JAIL = "Bolingbroke Penitentiary",
-    KOREAT = "Little Seoul",
-    LACT = "Land Act Reservoir",
-    LAGO = "Lago Zancudo",
-    LDAM = "Land Act Dam",
-    LEGSQU = "Legion Square",
-    LMESA = "La Mesa",
-    LOSPUER = "La Puerta",
-    MIRR = "Mirror Park",
-    MORN = "Morningwood",
-    MOVIE = "Richards Majestic",
-    MTCHIL = "Mount Chiliad",
-    MTGORDO = "Mount Gordo",
-    MTJOSE = "Mount Josiah",
-    MURRI = "Murrieta Heights",
-    NCHU = "North Chumash",
-    NOOSE = "N.O.O.S.E",
-    OCEANA = "Pacific Ocean",
-    PALCOV = "Paleto Cove",
-    PALETO = "Paleto Bay",
-    PALFOR = "Paleto Forest",
-    PALHIGH = "Palomino Highlands",
-    PALMPOW = "Palmer-Taylor Power Station",
-    PBLUFF = "Pacific Bluffs",
-    PBOX = "Pillbox Hill",
-    PROCOB = "Procopio Beach",
-    RANCHO = "Rancho",
-    RGLEN = "Richman Glen",
-    RICHM = "Richman",
-    ROCKF = "Rockford Hills",
-    RTRAK = "Redwood Lights Track",
-    SANAND = "San Andreas",
-    SANCHIA = "San Chianski Mountain Range",
-    SANDY = "Sandy Shores",
-    SKID = "Mission Row",
-    SLAB = "Stab City",
-    STAD = "Maze Bank Arena",
-    STRAW = "Strawberry",
-    TATAMO = "Tataviam Mountains",
-    TERMINA = "Terminal",
-    TEXTI = "Textile City",
-    TONGVAH = "Tongva Hills",
-    TONGVAV = "Tongva Valley",
-    VCANA = "Vespucci Canals",
-    VESP = "Vespucci",
-    VINE = "Vinewood",
-    WINDF = "Ron Alternates Wind Farm",
-    WVINE = "West Vinewood",
-    ZANCUDO = "Zancudo River",
-    ZP_ORT = "Port of South Los Santos",
-    ZQ_UAR = "Davis Quartz"
+    ["AIRP"] = "Los Santos International Airport",
+    ["ALAMO"] = "Alamo Sea",
+    ["ALTA"] = "Alta",
+    ["ARMYB"] = "Fort Zancudo",
+    ["BANHAMC"] = "Banham Canyon Dr",
+    ["BANNING"] = "Banning",
+    ["BEACH"] = "Vespucci Beach",
+    ["BHAMCA"] = "Banham Canyon",
+    ["BRADP"] = "Braddock Pass",
+    ["BRADT"] = "Braddock Tunnel",
+    ["BURTON"] = "Burton",
+    ["CALAFB"] = "Calafia Bridge",
+    ["CANNY"] = "Raton Canyon",
+    ["CCREAK"] = "Cassidy Creek",
+    ["CHAMH"] = "Chamberlain Hills",
+    ["CHIL"] = "Vinewood Hills",
+    ["CHU"] = "Chumash",
+    ["CMSW"] = "Chiliad Mountain State Wilderness",
+    ["CYPRE"] = "Cypress Flats",
+    ["DAVIS"] = "Davis",
+    ["DELBE"] = "Del Perro Beach",
+    ["DELPE"] = "Del Perro",
+    ["DELSOL"] = "La Puerta",
+    ["DESRT"] = "Grand Senora Desert",
+    ["DOWNT"] = "Downtown",
+    ["DTVINE"] = "Downtown Vinewood",
+    ["EAST_V"] = "East Vinewood",
+    ["EBURO"] = "El Burro Heights",
+    ["ELGORL"] = "El Gordo Lighthouse",
+    ["ELYSIAN"] = "Elysian Island",
+    ["GALFISH"] = "Galilee",
+    ["GOLF"] = "GWC and Golfing Society",
+    ["GRAPES"] = "Grapeseed",
+    ["GREATC"] = "Great Chaparral",
+    ["HARMO"] = "Harmony",
+    ["HAWICK"] = "Hawick",
+    ["HORS"] = "Vinewood Racetrack",
+    ["HUMLAB"] = "Humane Labs and Research",
+    ["JAIL"] = "Bolingbroke Penitentiary",
+    ["KOREAT"] = "Little Seoul",
+    ["LACT"] = "Land Act Reservoir",
+    ["LAGO"] = "Lago Zancudo",
+    ["LDAM"] = "Land Act Dam",
+    ["LEGSQU"] = "Legion Square",
+    ["LMESA"] = "La Mesa",
+    ["LOSPUER"] = "La Puerta",
+    ["MIRR"] = "Mirror Park",
+    ["MORN"] = "Morningwood",
+    ["MOVIE"] = "Richards Majestic",
+    ["MTCHIL"] = "Mount Chiliad",
+    ["MTGORDO"] = "Mount Gordo",
+    ["MTJOSE"] = "Mount Josiah",
+    ["MURRI"] = "Murrieta Heights",
+    ["NCHU"] = "North Chumash",
+    ["NOOSE"] = "N.O.O.S.E",
+    ["OCEANA"] = "Pacific Ocean",
+    ["PALCOV"] = "Paleto Cove",
+    ["PALETO"] = "Paleto Bay",
+    ["PALFOR"] = "Paleto Forest",
+    ["PALHIGH"] = "Palomino Highlands",
+    ["PALMPOW"] = "Palmer-Taylor Power Station",
+    ["PBLUFF"] = "Pacific Bluffs",
+    ["PBOX"] = "Pillbox Hill",
+    ["PROCOB"] = "Procopio Beach",
+    ["RANCHO"] = "Rancho",
+    ["RGLEN"] = "Richman Glen",
+    ["RICHM"] = "Richman",
+    ["ROCKF"] = "Rockford Hills",
+    ["RTRAK"] = "Redwood Lights Track",
+    ["SANAND"] = "San Andreas",
+    ["SANCHIA"] = "San Chianski Mountain Range",
+    ["SANDY"] = "Sandy Shores",
+    ["SKID"] = "Mission Row",
+    ["SLAB"] = "Stab City",
+    ["STAD"] = "Maze Bank Arena",
+    ["STRAW"] = "Strawberry",
+    ["TATAMO"] = "Tataviam Mountains",
+    ["TERMINA"] = "Terminal",
+    ["TEXTI"] = "Textile City",
+    ["TONGVAH"] = "Tongva Hills",
+    ["TONGVAV"] = "Tongva Valley",
+    ["VCANA"] = "Vespucci Canals",
+    ["VESP"] = "Vespucci",
+    ["VINE"] = "Vinewood",
+    ["WINDF"] = "Ron Alternates Wind Farm",
+    ["WVINE"] = "West Vinewood",
+    ["ZANCUDO"] = "Zancudo River",
+    ["ZP_ORT"] = "Port of South Los Santos",
+    ["ZQ_UAR"] = "Davis Quartz"
+}
+
+
+local radioStations = {
+    ["RADIO_01_CLASS_ROCK"] = "Los Santos Rock Radio",
+    ["RADIO_02_POP"] = "Non-Stop-Pop FM",
+    ["RADIO_03_HIPHOP_NEW"] = "Radio Los Santos",
+    ["RADIO_04_PUNK"] = "Channel X",
+    ["RADIO_05_TALK_01"] = "West Coast Talk Radio",
+    ["RADIO_06_COUNTRY"] = "Rebel Radio",
+    ["RADIO_07_DANCE_01"] = "Soulwax FM",
+    ["RADIO_08_MEXICAN"] = "East Los FM",
+    ["RADIO_09_HIPHOP_OLD"] = "West Coast Classics",
+    ["RADIO_12_REGGAE"] = "Blue Ark",
+    ["RADIO_13_JAZZ"] = "Worldwide FM",
+    ["RADIO_14_DANCE_02"] = "FlyLo FM",
+    ["RADIO_15_MOTOWN"] = "The Lowdown 91.1",
+    ["RADIO_20_THELAB"] = "The Lab",
+    ["RADIO_16_SILVERLAKE"] = "Radio Mirror Park",
+    ["RADIO_17_FUNK"] = "Space 103.2",
+    ["RADIO_18_90S_ROCK"] = "Vinewood Boulevard Radio",
+    ["RADIO_21_DLC_XM17"] = "Blonded Los Santos 97.8 FM",
+    ["RADIO_11_TALK_02"] = "Blaine County Radio",
+    ["RADIO_22_DLC_BATTLE_MIX1_RADIO"] = "Los Santos Underground Radio",
+    ["RADIO_19_USER"] = "Self Radio",
+    ["HIDDEN_RADIO_01_CLASS_ROCK"] = "Hidden Radio 01 - Classic Rock",
+    ["HIDDEN_RADIO_AMBIENT_TV_BRIGHT"] = "Hidden Radio - Ambient TV (Bright)",
+    ["HIDDEN_RADIO_AMBIENT_TV"] = "Hidden Radio - Ambient TV",
+    ["HIDDEN_RADIO_ADVERTS"] = "Hidden Radio - Adverts",
+    ["HIDDEN_RADIO_02_POP"] = "Hidden Radio 01 - Pop",
+    ["HIDDEN_RADIO_03_HIPHOP_NEW"] = "Hidden Radio 03 - Hip hop (New)",
+    ["HIDDEN_RADIO_04_PUNK"] = "Hidden Radio 04 - Punk",
+    ["HIDDEN_RADIO_06_COUNTRY"] = "Hidden Radio 06 - Country",
+    ["HIDDEN_RADIO_07_DANCE_01"] = "Hidden Radio 07 - Dance",
+    ["HIDDEN_RADIO_09_HIPHOP_OLD"] = "Hidden Radio 09 - Hip hop (old)",
+    ["HIDDEN_RADIO_12_REGGAE"] = "Hidden Radio 12 - Reggae",
+    ["HIDDEN_RADIO_15_MOTOWN"] = "Hidden Radio 15 - Motown",
+    ["HIDDEN_RADIO_16_SILVERLAKE"] = "Hidden Radio 16 - Silverlake",
+    ["HIDDEN_RADIO_STRIP_CLUB"] = "Hidden Radio - Strip Club",
+    ["RADIO_22_DLC_BATTLE_MIX1_CLUB"] = "RADIO_22_DLC_BATTLE_MIX1_CLUB",
+    ["DLC_BATTLE_MIX1_CLUB_PRIV"] = "DLC_BATTLE_MIX1_CLUB_PRIV",
+    ["HIDDEN_RADIO_BIKER_CLASSIC_ROCK"] = "Hidden Radio - Biker Classic Rock",
+    ["DLC_BATTLE_MIX2_CLUB_PRIV"] = "DLC_BATTLE_MIX2_CLUB_PRIV",
+    ["RADIO_23_DLC_BATTLE_MIX2_CLUB"] = "RADIO_23_DLC_BATTLE_MIX2_CLUB",
+    ["RADIO_23_DLC_XM19_RADIO"] = "iFruit Radio",
+    ["HIDDEN_RADIO_BIKER_MODERN_ROCK"] = "Hidden Radio - Biker Modern Rock",
+    ["RADIO_25_DLC_BATTLE_MIX4_CLUB"] = "RADIO_25_DLC_BATTLE_MIX4_CLUB",
+    ["RADIO_26_DLC_BATTLE_CLUB_WARMUP"] = "RADIO_26_DLC_BATTLE_CLUB_WARMUP",
+    ["DLC_BATTLE_MIX4_CLUB_PRIV"] = "DLC_BATTLE_MIX4_CLUB_PRIV",
+    ["HIDDEN_RADIO_BIKER_PUNK"] = "Hidden Radio - Biker Punk",
+    ["RADIO_24_DLC_BATTLE_MIX3_CLUB"] = "RADIO_24_DLC_BATTLE_MIX3_CLUB",
+    ["DLC_BATTLE_MIX3_CLUB_PRIV"] = "DLC_BATTLE_MIX3_CLUB_PRIV",
+    ["HIDDEN_RADIO_BIKER_HIP_HOP"] = "Hidden Radio - Biker Hip hop",
+    ["OFF"] = "Radio Off"
 }
 
 tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainParent.id, function(f)  
@@ -132,6 +200,10 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
             else
                 info[#info + 1] = "2Take1 Version: " .. menu.get_version() .. " | GTA:O Version: Unknown (Natives Trusted Mode Not Enabled)"
             end
+        end
+
+        if tFeature["username"].on then
+            info[#info + 1] = "Username: " .. player.get_player_name(playerId)
         end
 
         if tFeature["walletBankAmount"].on then
@@ -452,6 +524,29 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
             end
 		end
 
+        if tFeature["vehicleHealth"].on then
+            if isTrusted then
+                if ped.is_ped_in_any_vehicle(playerPed) then
+                    local myVehicle = player.player_vehicle()
+                    local bodyHealth = calculatePercentage(0, 1000, native.call(0xF271147EB7B40F12, myVehicle):__tonumber()) -- VEHICLE::GET_VEHICLE_BODY_HEALTH
+                    local engineHealth = calculatePercentage(-4000, 1000, native.call(0xC45D23BAF168AAB8, myVehicle):__tonumber())  -- VEHICLE::GET_VEHICLE_ENGINE_HEALTH
+                    local fuelTankHealth = calculatePercentage(-1000, 1000, native.call(0x7D5DABE888D2D074, myVehicle):__tonumber()) -- VEHICLE::GET_VEHICLE_PETROL_TANK_HEALTH
+                    
+                    if vFeature["vehicleHealthFormat"].value == 0 then
+                        info[#info + 1] = string.format("Vehicle Health:\n\tBody: %.2f%%\n\tEngine: %.2f%%\n\tFuel Tank: %.2f%%", bodyHealth, engineHealth, fuelTankHealth)
+                    else
+                        info[#info + 1] = string.format("Vehicle Health: Body: %.2f%% | Engine: %.2f%% | Fuel Tank: %.2f%%", bodyHealth, engineHealth, fuelTankHealth)
+                    end                    
+                    
+                else
+                    info[#info + 1] = "Vehicle Health: N/A"
+                end
+            else
+                info[#info + 1] = "Vehicle Health: Unknown (Natives Trusted Mode Not Enabled)"
+            end
+        end
+        
+
         if tFeature["vehicleGear"].on then
             if ped.is_ped_in_any_vehicle(playerPed) then
                 local veh = player.player_vehicle()
@@ -573,9 +668,9 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
         
 		if tFeature["currentPosition"].on then
 			if vFeature["currentPositionFormat"].value == 1 then
-				info[#info + 1] = string.format("Current Position: X: %.3f | Y: %.3f | Z: %.3f", playerPos.x, playerPos.y, playerPos.z)
+				info[#info + 1] = string.format("Current Position: X: %.2f | Y: %.2f | Z: %.2f", playerPos.x, playerPos.y, playerPos.z)
 			else
-				info[#info + 1] = string.format("Current Position:\n\tX: %.3f\n\tY: %.3f\n\tZ: %.3f", playerPos.x, playerPos.y, playerPos.z)
+				info[#info + 1] = string.format("Current Position:\n\tX: %.2f\n\tY: %.2f\n\tZ: %.2f", playerPos.x, playerPos.y, playerPos.z)
 			end
 		end
 
@@ -647,6 +742,20 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
             end
         end
 
+        if tFeature["currentRadioStation"].on then
+            if isTrusted then
+                local currentStationNameRaw = native.call(0xF6D733C32076AD03):__tostring(true) -- AUDIO::GET_PLAYER_RADIO_STATION_NAME
+                if radioStations[currentStationNameRaw] then
+                    info[#info + 1] = "Current Radio Station: " .. radioStations[currentStationNameRaw]
+                else
+                    info[#info + 1] = "Current Radio Station: Off" 
+                end
+            else
+                info[#info + 1] = "Current Radio Station: Unknown (Natives Trusted Mode Not Enabled)"
+            end
+        end
+
+
 		if tFeature["interiorID"].on then
 			info[#info + 1] = "Interior ID: " .. interior.get_interior_from_entity(playerPed)
 		end
@@ -671,6 +780,7 @@ end)
 
 local displayOptions = menu.add_feature("Displayable Options", "parent", mainParent.id)
     tFeature["versionInfo"] = menu.add_feature("Menu / Game Version Info", "toggle", displayOptions.id)
+    tFeature["username"] = menu.add_feature("Account Username", "toggle", displayOptions.id)
     tFeature["walletBankAmount"] = menu.add_feature("Wallet / Bank Amount", "toggle", displayOptions.id)
     tFeature["calculatedFPS"] = menu.add_feature("Calculated FPS", "toggle", displayOptions.id)
     tFeature["currentSessionType"] = menu.add_feature("Current Session Type", "toggle", displayOptions.id)
@@ -699,6 +809,7 @@ local displayOptions = menu.add_feature("Displayable Options", "parent", mainPar
     tFeature["currentTargetingMode"] = menu.add_feature("Current Targeting Mode", "toggle", displayOptions.id)
     tFeature["cameraFov"] = menu.add_feature("Camera FOV", "toggle", displayOptions.id)
     tFeature["vehicleInformation"] = menu.add_feature("Vehicle Info", "toggle", displayOptions.id)
+    tFeature["vehicleHealth"] = menu.add_feature("Vehicle Health", "toggle", displayOptions.id)
     tFeature["vehicleGear"] = menu.add_feature("Vehicle Gear", "toggle", displayOptions.id)
     tFeature["vehicleRPM"] = menu.add_feature("Vehicle RPM", "toggle", displayOptions.id)
     tFeature["currentSpeed"] = menu.add_feature("Current Speed", "toggle", displayOptions.id)
@@ -714,6 +825,7 @@ local displayOptions = menu.add_feature("Displayable Options", "parent", mainPar
     tFeature["currentDirection"] = menu.add_feature("Current Direction", "toggle", displayOptions.id)
     tFeature["currentStreet"] = menu.add_feature("Current Street", "toggle", displayOptions.id)
     tFeature["currentZone"] = menu.add_feature("Current Zone / Area", "toggle", displayOptions.id)
+    tFeature["currentRadioStation"] = menu.add_feature("Current Radio Station", "toggle", displayOptions.id)
     tFeature["interiorID"] = menu.add_feature("Interior ID", "toggle", displayOptions.id)
     
 
@@ -732,6 +844,8 @@ local settingsParent = menu.add_feature("Settings", "parent", mainParent.id)
         tFeature["displayCrossroads"] = menu.add_feature("Street Info: Display Intersecting Roads", "toggle", displayFeatureSettings.id)
         vFeature["moneySeperator"] = menu.add_feature("Money Seperator", "action_value_str", displayFeatureSettings.id)
         vFeature["moneySeperator"]:set_str_data({",", ".", ""})
+        vFeature["vehicleHealthFormat"] = menu.add_feature("Vehicle Health Format", "action_value_str", displayFeatureSettings.id)
+        vFeature["vehicleHealthFormat"]:set_str_data({"Vertical", "Horizontal"})
 
     local colorsParent = menu.add_feature("Overlay Colors", "parent", settingsParent.id)
         vFeature["red"] = menu.add_feature("Red", "autoaction_value_i", colorsParent.id)
@@ -783,6 +897,7 @@ local settingsParent = menu.add_feature("Settings", "parent", mainParent.id)
 tFeature["enableOverlay"].hint = "Enables the overlay.\nOptions to be displayed can be enabled in the 'Displayable Options' submenu."
 displayOptions.hint = "A submenu containing all the available options to be displayed in the overlay."
 tFeature["versionInfo"].hint = "Displays the current versions of both the menu and the game."
+tFeature["username"].hint = "Displays your current username."
 tFeature["walletBankAmount"].hint = "Displays how much money you have in your wallet and bank for the last character you entered Online with.\n\nThe seperator symbol can be changed in the script settings."
 tFeature["calculatedFPS"].hint = "Displays your games current calculated FPS (Frames Per Second)."
 tFeature["currentSessionType"].hint = "Displays the current session type.\nSingle Player / Public / Invite Only / Friends Only / Crew Only / Solo"
@@ -811,6 +926,7 @@ tFeature["wantedLevel"].hint = "Displays your current wanted level."
 tFeature["currentTargetingMode"].hint = "Displays your currently set targeting mode."
 tFeature["cameraFov"].hint = "Displays your current Field Of View setting."
 tFeature["vehicleInformation"].hint = "Displays information about your current vehicle."
+tFeature["vehicleHealth"].hint = "Displays the current vehicle's health as percentages."
 tFeature["vehicleGear"].hint = "Displays what gear the vehicle transmission is in."
 tFeature["vehicleRPM"].hint = "Displays the vehicle's engine RPM according to the game. It is not accurate."
 tFeature["currentSpeed"].hint = "Shows you how fast you are moving."
@@ -825,9 +941,19 @@ tFeature["heightAboveSea"].hint = "Displays your current height above the sea le
 tFeature["heightAboveGround"].hint = "Displays your current height above the ground."
 tFeature["currentStreet"].hint = "Displays the current street you are on, or the closest street to your position."
 tFeature["currentZone"].hint = "Displays the current Zone / Area you are in."
+tFeature["currentRadioStation"].hint = "Displays the currently selected radio station."
 tFeature["interiorID"].hint = "Displays the ID for the interior you are currently in (displays '0' if you are outside)."
 tFeature["currentDirection"].hint = "Displays your current heading (direction you are facing)."
 vFeature["textFont"].hint = "Matches the overlay font to the selected menu UI element.\n\nTo set a custom font, go to [Local > Settings > Menu UI > Fonts], change one of them such as script 5 to your desired font, then come back to this feature and change it until it matches script 5 (or whatever one you decided on)."
+
+vFeature["currentSpeedType"].hint = "Sets the measurement used for the 'Current Speed' display option."
+vFeature["computerTimeFormat"].hint = "Sets the format for the 'Computer Time' display option."
+vFeature["computerDateFormat"].hint = "Sets the format for the 'Computer Date' display option."
+vFeature["currentPositionFormat"].hint = "Sets the format for the 'Current Position' display option."
+vFeature["entityCountsFormat"].hint = "Sets the format for the 'Entity Counts' display option."
+tFeature["displayCrossroads"].hint = "Enables or disables displaying crossroads / intersections for the 'Current Street' display option."
+vFeature["moneySeperator"].hint = "Sets what seperator is used for the 'Wallet / Bank Amount' display option."
+vFeature["vehicleHealthFormat"].hint = "Sets the format for the 'Vehicle Health' display option."
 
 menu.add_feature("Save Settings", "action", settingsParent.id, function(f)
     for k, v in pairs(tFeature) do
