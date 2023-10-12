@@ -1,8 +1,9 @@
 # Toph's Overlay.
 A Lua script for 2Take1Menu that shows you information about various things.
 
-All Displayable Options as of v1.7.0
-- Menu / Game Version.
+All Displayable Options as of v1.8.0
+- Menu / Game Version
+- Account Username
 - Wallet / Bank Amounts (Multiplayer only.)
 - FPS
 - Session Type
@@ -28,6 +29,7 @@ All Displayable Options as of v1.7.0
 - Current Targeting Mode
 - Current Field Of View
 - Current Vehicle Details
+- Current Vehicle Health
 - Current Vehicle Gear
 - Current Vehicle RPM
 - Current Speed
@@ -43,4 +45,5 @@ All Displayable Options as of v1.7.0
 - Heading (Direction)
 - Current Street Name
 - Current Zone Name
+_ Current Radio Station
 - Current Interior ID
