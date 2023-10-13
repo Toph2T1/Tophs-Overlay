@@ -45,5 +45,5 @@ All Displayable Options as of v1.8.0
 - Heading (Direction)
 - Current Street Name
 - Current Zone Name
-_ Current Radio Station
+-  Current Radio Station
 - Current Interior ID
