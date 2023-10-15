@@ -4,7 +4,7 @@ A Lua script for 2Take1Menu that shows you information about various things.
 All Displayable Options as of v1.8.0
 - Menu / Game Version
 - Account Username
-- Wallet / Bank Amounts (Multiplayer only.)
+- Wallet / Bank Amounts (Total Cash amount in singleplayer)
 - FPS
 - Session Type
 - Connected Via Relay
