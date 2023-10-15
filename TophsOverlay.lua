@@ -39,6 +39,17 @@ local function calculatePercentage(minValue, maxValue, currentValue)
     end
 end
 
+local frameCounter = 0
+local storedFPS = 0
+local function get_game_fps(frequency)
+    frameCounter = frameCounter + 1
+    if frameCounter >= frequency then
+        storedFPS = math.ceil(1 / gameplay.get_frame_time())
+        frameCounter = 0
+    end
+    return storedFPS
+end
+
 
 local zones = {
     ["AIRP"] = "Los Santos International Airport",
@@ -191,6 +202,7 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
         local info = {}
 
         local playerId = player.player_id()
+        local playerName = player.get_player_name(playerId)
         local playerPed = player.player_ped()
 		local playerPos = player.get_player_coords(playerId)
 
@@ -203,20 +215,33 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
         end
 
         if tFeature["username"].on then
-            info[#info + 1] = "Username: " .. player.get_player_name(playerId)
+            info[#info + 1] = "Username: " .. playerName
         end
 
         if tFeature["walletBankAmount"].on then
             if network.is_session_started() then
                 local lastMpChar = stats.stat_get_int(gameplay.get_hash_key("MPPLY_LAST_MP_CHAR"), -1)
-                info[#info + 1] = "Wallet: $" .. addCommasToNumber(stats.stat_get_int(gameplay.get_hash_key("MP" .. lastMpChar .. "_WALLET_BALANCE"), -1), vFeature["moneySeperator"].str_data[vFeature["moneySeperator"].value+1]) .. " | Bank: $" .. addCommasToNumber(stats.stat_get_int(gameplay.get_hash_key("BANK_BALANCE"), -1), vFeature["moneySeperator"].str_data[vFeature["moneySeperator"].value+1])
+                local walletBalance = stats.stat_get_int(gameplay.get_hash_key("MP" .. lastMpChar .. "_WALLET_BALANCE"), -1)
+                local bankBalance = stats.stat_get_int(gameplay.get_hash_key("BANK_BALANCE"), -1)
+
+                info[#info + 1] = "Wallet: $" .. addCommasToNumber(walletBalance, vFeature["moneySeperator"].str_data[vFeature["moneySeperator"].value+1]) .. " | Bank: $" .. addCommasToNumber(bankBalance, vFeature["moneySeperator"].str_data[vFeature["moneySeperator"].value+1])
             else
-                info[#info + 1] = "Wallet: $- | Bank: $- (Multiplayer Only)"
+                local currentStoryPed = player.get_player_model(playerId)
+                if currentStoryPed == 225514697 then
+                    info[#info + 1] = "Total Cash: $" .. addCommasToNumber(stats.stat_get_int(gameplay.get_hash_key("SP0_TOTAL_CASH"), -1), vFeature["moneySeperator"].str_data[vFeature["moneySeperator"].value+1])
+                elseif currentStoryPed == 2602752943 then
+                    info[#info + 1] = "Total Cash: $" .. addCommasToNumber(stats.stat_get_int(gameplay.get_hash_key("SP1_TOTAL_CASH"), -1), vFeature["moneySeperator"].str_data[vFeature["moneySeperator"].value+1])
+                elseif currentStoryPed == 2608926626 then
+                    info[#info + 1] = "Total Cash: $" .. addCommasToNumber(stats.stat_get_int(gameplay.get_hash_key("SP2_TOTAL_CASH"), -1), vFeature["moneySeperator"].str_data[vFeature["moneySeperator"].value+1])
+                else
+                    info[#info + 1] = "Total Cash: $0"
+                end                
             end
         end
 
+        -- Modify the code to update and display the FPS every 5 frames
         if tFeature["calculatedFPS"].on then
-            info[#info + 1] = "FPS: " .. math.ceil(1 / gameplay.get_frame_time())
+            info[#info + 1] = "FPS: " .. get_game_fps(vFeature["calculatedFpsUpdateSpeed"].value)
         end
 
         if tFeature["currentSessionType"].on then
@@ -270,7 +295,7 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
                 local sessionhost = player.get_host()
                 local sessionHostName = (sessionhost >= 0 and player.get_player_name(sessionhost)) or "N/A"
 
-                if sessionHostName == player.get_player_name(playerId) then
+                if sessionHostName == playerName then
                     info[#info + 1] = "Session Host: #FFB6599B#" .. sessionHostName .. "#DEFAULT#"
                 elseif player.is_player_friend(sessionhost) then
                     info[#info + 1] = "Session Host: #FFE5B55D#" .. sessionHostName .. "#DEFAULT#" 
@@ -316,7 +341,7 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
                 local scriptHost = script.get_host_of_this_script()
                 local scriptHostName = player.get_player_name(scriptHost) or "N/A"
 
-                if scriptHostName == player.get_player_name(playerId) then
+                if scriptHostName == playerName then
                     info[#info + 1] = "Script Host: #FFB6599B#" .. scriptHostName .. "#DEFAULT#"
                 elseif player.is_player_friend(scriptHost) then
                     info[#info + 1] = "Script Host: #FFE5B55D#" .. scriptHostName .. "#DEFAULT#" 
@@ -846,6 +871,10 @@ local settingsParent = menu.add_feature("Settings", "parent", mainParent.id)
         vFeature["moneySeperator"]:set_str_data({",", ".", ""})
         vFeature["vehicleHealthFormat"] = menu.add_feature("Vehicle Health Format", "action_value_str", displayFeatureSettings.id)
         vFeature["vehicleHealthFormat"]:set_str_data({"Vertical", "Horizontal"})
+        vFeature["calculatedFpsUpdateSpeed"] = menu.add_feature("Calculated FPS Update Speed", "action_value_i", displayFeatureSettings.id)
+        vFeature["calculatedFpsUpdateSpeed"].min = 0
+        vFeature["calculatedFpsUpdateSpeed"].max = 100
+        vFeature["calculatedFpsUpdateSpeed"].value = 50
 
     local colorsParent = menu.add_feature("Overlay Colors", "parent", settingsParent.id)
         vFeature["red"] = menu.add_feature("Red", "autoaction_value_i", colorsParent.id)
@@ -898,7 +927,7 @@ tFeature["enableOverlay"].hint = "Enables the overlay.\nOptions to be displayed 
 displayOptions.hint = "A submenu containing all the available options to be displayed in the overlay."
 tFeature["versionInfo"].hint = "Displays the current versions of both the menu and the game."
 tFeature["username"].hint = "Displays your current username."
-tFeature["walletBankAmount"].hint = "Displays how much money you have in your wallet and bank for the last character you entered Online with.\n\nThe seperator symbol can be changed in the script settings."
+tFeature["walletBankAmount"].hint = "Displays how much money you have.\n\nThe seperator symbol can be changed in the script settings."
 tFeature["calculatedFPS"].hint = "Displays your games current calculated FPS (Frames Per Second)."
 tFeature["currentSessionType"].hint = "Displays the current session type.\nSingle Player / Public / Invite Only / Friends Only / Crew Only / Solo"
 tFeature["connectedViaRelay"].hint = "Displays if you are connected to the current session via a relay or not."
@@ -954,6 +983,7 @@ vFeature["entityCountsFormat"].hint = "Sets the format for the 'Entity Counts' d
 tFeature["displayCrossroads"].hint = "Enables or disables displaying crossroads / intersections for the 'Current Street' display option."
 vFeature["moneySeperator"].hint = "Sets what seperator is used for the 'Wallet / Bank Amount' display option."
 vFeature["vehicleHealthFormat"].hint = "Sets the format for the 'Vehicle Health' display option."
+vFeature["calculatedFpsUpdateSpeed"].hint = "Sets how often the FPS counter updates it's value."
 
 menu.add_feature("Save Settings", "action", settingsParent.id, function(f)
     for k, v in pairs(tFeature) do
