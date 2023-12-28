@@ -6,12 +6,14 @@ All Displayable Options as of v1.8.1
 - Account Username
 - Wallet / Bank Amounts (Total Cash amount in singleplayer)
 - FPS
+- Transition State
 - Session Type
 - Connected Via Relay
 - Session Hidden
 - Session Host
 - Next Session Host
 - Script Host
+- Average Latency
 - Player Count
     - Alive / Dead
     - Modders
@@ -40,6 +42,8 @@ All Displayable Options as of v1.8.1
 - Closest Player (to you)
 - Furtherst Player (from you)
 - Current XYZ Position
+- Current Player Ped Rotation
+- Current Camera Rotation
 - Height Above Sea
 - Height Above Ground
 - Heading (Direction)
