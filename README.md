@@ -1,7 +1,7 @@
 # Toph's Overlay.
 A Lua script for 2Take1Menu that shows you information about various things.
 
-All Displayable Options as of v1.8.1
+All Displayable Options as of v1.9.0
 - Menu / Game Version
 - Account Username
 - Wallet / Bank Amounts (Total Cash amount in singleplayer)
