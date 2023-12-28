@@ -1,8 +1,8 @@
 local tFeature = {} -- Toggle Features
 local vFeature = {} -- Value Features
-local INI = IniParser("cfg/TophsOverlaySettings.ini") -- Script Settings Location
-local isTrusted = menu.is_trusted_mode_enabled(eTrustedFlags.LUA_TRUST_NATIVES) -- Trusted mode check.
-local mainParent = menu.add_feature("Toph's Overlay", "parent") -- Main Parent [Local -> Script Features -> Toph's Overlay]
+local INI = IniParser("cfg/TophsOverlaySettings.ini")
+local isTrusted = menu.is_trusted_mode_enabled(eTrustedFlags.LUA_TRUST_NATIVES)
+local mainParent = menu.add_feature("Toph's Overlay", "parent")
 
 local function RGBAToInt(R, G, B, A)
 	A = A or 255
@@ -49,7 +49,6 @@ local function get_game_fps(frequency)
     end
     return storedFPS
 end
-
 
 local zones = {
     ["AIRP"] = "Los Santos International Airport",
@@ -143,7 +142,6 @@ local zones = {
     ["ZQ_UAR"] = "Davis Quartz"
 }
 
-
 local radioStations = {
     ["RADIO_01_CLASS_ROCK"] = "Los Santos Rock Radio",
     ["RADIO_02_POP"] = "Non-Stop-Pop FM",
@@ -197,6 +195,79 @@ local radioStations = {
     ["OFF"] = "Radio Off"
 }
 
+local transitionStates = {
+    ["EMPTY"] = 0,
+    ["SP_SWOOP_UP"] = 1,
+    ["MP_SWOOP_UP"] = 2,
+    ["CREATOR_SWOOP_UP"] = 3,
+    ["PRE_HUD_CHECKS"] = 4,
+    ["WAIT_HUD_EXIT"] = 5,
+    ["WAIT_FOR_SUMMON"] = 6,
+    ["SP_SWOOP_DOWN"] = 7,
+    ["MP_SWOOP_DOWN"] = 8,
+    ["CANCEL_JOINING"] = 9,
+    ["RETRY_LOADING"] = 10,
+    ["RETRY_LOADING_SLOT_1"] = 11,
+    ["RETRY_LOADING_SLOT_2"] = 12,
+    ["RETRY_LOADING_SLOT_3"] = 13,
+    ["RETRY_LOADING_SLOT_4"] = 14,
+    ["WAIT_ON_INVITE"] = 15,
+    ["PREJOINING_FM_SESSION_CHECKS"] = 16,
+    ["LOOK_FOR_FRESH_JOIN_FM"] = 17,
+    ["LOOK_TO_JOIN_ANOTHER_SESSION_FM"] = 18,
+    ["CONFIRM_FM_SESSION_JOINING"] = 19,
+    ["WAIT_JOIN_FM_SESSION"] = 20,
+    ["CREATION_ENTER_SESSION"] = 21,
+    ["PRE_FM_LAUNCH_SCRIPT"] = 22,
+    ["FM_TEAMFULL_CHECK"] = 23,
+    ["START_FM_LAUNCH_SCRIPT"] = 24,
+    ["FM_TRANSITION_CREATE_PLAYER"] = 25,
+    ["IS_FM_AND_TRANSITION_READY"] = 26,
+    ["FM_SWOOP_DOWN"] = 27,
+    ["POST_BINK_VIDEO_WARP"] = 28,
+    ["FM_FINAL_SETUP_PLAYER"] = 29,
+    ["MOVE_FM_TO_RUNNING_STATE"] = 30,
+    ["FM_HOW_TO_TERMINATE"] = 31,
+    ["START_CREATOR_PRE_LAUNCH_SCRIPT_CHECK"] = 32,
+    ["START_CREATOR_LAUNCH_SCRIPT"] = 33,
+    ["CREATOR_TRANSITION_CREATE_PLAYER"] = 34,
+    ["IS_CREATOR_AND_TRANSITION_READY"] = 35,
+    ["CREATOR_SWOOP_DOWN"] = 36,
+    ["CREATOR_FINAL_SETUP_PLAYER"] = 37,
+    ["MOVE_CREATOR_TO_RUNNING_STATE"] = 38,
+    ["PREJOINING_TESTBED_SESSION_CHECKS"] = 39,
+    ["LOOK_FOR_FRESH_JOIN_TESTBED"] = 40,
+    ["LOOK_FOR_FRESH_HOST_TESTBED"] = 41,
+    ["LOOK_TO_JOIN_ANOTHER_SESSION_TESTBED"] = 42,
+    ["LOOK_TO_HOST_SESSION_TESTBED"] = 43,
+    ["CONFIRM_TESTBED_SESSION_JOINING"] = 44,
+    ["WAIT_JOIN_TESTBED_SESSION"] = 45,
+    ["START_TESTBED_LAUNCH_SCRIPT"] = 46,
+    ["TESTBED_TRANSITION_CREATE_PLAYER"] = 47,
+    ["IS_TESTBED_AND_TRANSITION_READY"] = 48,
+    ["TESTBED_SWOOP_DOWN"] = 49,
+    ["TESTBED_FINAL_SETUP_PLAYER"] = 50,
+    ["MOVE_TESTBED_TO_RUNNING_STATE"] = 51,
+    ["TESTBED_HOW_TO_TERMINATE"] = 52,
+    ["QUIT_CURRENT_SESSION_PROMPT"] = 53,
+    ["WAIT_FOR_TRANSITION_SESSION_TO_SETUP"] = 54,
+    ["TERMINATE_SP"] = 55,
+    ["WAIT_TERMINATE_SP"] = 56,
+    ["KICK_TERMINATE_SESSION"] = 57,
+    ["TERMINATE_SESSION"] = 58,
+    ["WAIT_TERMINATE_SESSION"] = 59,
+    ["TERMINATE_SESSION_AND_HOLD"] = 60,
+    ["TERMINATE_SESSION_AND_MOVE_INTO_HOLDING_STATE"] = 61,
+    ["TEAM_SWAPPING_CHECKS"] = 62,
+    ["RETURN_TO_SINGLEPLAYER"] = 63,
+    ["WAIT_FOR_SINGLEPLAYER_TO_START"] = 64,
+    ["WAITING_FOR_EXTERNAL_TERMINATION_CALL"] = 65,
+    ["TERMINATE_MAINTRANSITION"] = 66,
+    ["WAIT_FOR_DIRTY_LOAD_CONFIRM"] = 67,
+    ["DLC_INTRO_BINK"] = 68,
+    ["SPAWN_INTO_PERSONAL_VEHICLE"] = 69
+}
+
 tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainParent.id, function(f)  
     while f.on do
         local info = {}
@@ -205,6 +276,8 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
         local playerName = player.get_player_name(playerId)
         local playerPed = player.player_ped()
 		local playerPos = player.get_player_coords(playerId)
+        local playerRotation = entity.get_entity_rotation(playerPed)
+        local cameraRotation = cam.get_final_rendered_cam_rot()
 
         if tFeature["versionInfo"].on then
             if isTrusted then
@@ -239,10 +312,24 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
             end
         end
 
-        -- Modify the code to update and display the FPS every 5 frames
         if tFeature["calculatedFPS"].on then
             info[#info + 1] = "FPS: " .. get_game_fps(vFeature["calculatedFpsUpdateSpeed"].value)
         end
+
+        if tFeature["transitionState"].on then
+            local stateNumber = script.get_global_i(1575008)
+            local stateName = "Unknown State"  -- Default state name
+        
+            for name, number in pairs(transitionStates) do
+                if number == stateNumber then
+                    stateName = name  -- Update the state name if a match is found
+                    break  -- Exit the loop after finding the match
+                end
+            end
+        
+            info[#info + 1] = "Transition State: " .. stateName .. " [" .. stateNumber .. "]"
+        end
+        
 
         if tFeature["currentSessionType"].on then
             if isTrusted then
@@ -354,6 +441,14 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
                 info[#info + 1] = "Script Host: N/A"
             end
 		end
+
+        if tFeature["averageLatency"].on then
+            if isTrusted then
+                info[#info + 1] = "Average Ping: " .. math.floor(native.call(0xD414BE129BB81B32, player.get_host()):__tonumber()) .. "ms"
+            else
+                info[#info + 1] = "Average Ping: Unknown (Natives Trusted Mode Not Enabled)"
+            end
+        end
 
         local alivePlayers = 0
         local deadPlayers = 0
@@ -699,6 +794,22 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
 			end
 		end
 
+        if tFeature["currentPedRotation"].on then
+			if vFeature["currentPedRotationFormat"].value == 1 then
+				info[#info + 1] = string.format("Ped Rotation: Pitch: %.5f | Roll: %.5f | Yaw: %.5f", playerRotation.x, playerRotation.y, playerRotation.z)
+			else
+				info[#info + 1] = string.format("Ped Rotation:\n\tPitch: %.5f\n\tRoll: %.5f\n\tYaw: %.5f", playerRotation.x, playerRotation.y, playerRotation.z)
+			end
+		end
+
+        if tFeature["currentCamRotation"].on then
+			if vFeature["currentCamRotationFormat"].value == 1 then
+				info[#info + 1] = string.format("Cam Rotation: Pitch: %.5f | Roll: %.5f | Yaw: %.5f", cameraRotation.x, cameraRotation.y, cameraRotation.z)
+			else
+				info[#info + 1] = string.format("Cam Rotation:\n\tPitch: %.5f\n\tRoll: %.5f\n\tYaw: %.5f", cameraRotation.x, cameraRotation.y, cameraRotation.z)
+			end
+		end
+
         if tFeature["heightAboveSea"].on then
             info[#info + 1] = "Height Above Sea: " .. math.floor(playerPos.z)
         end
@@ -798,22 +909,39 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
         
 		local pos = v2(scriptdraw.pos_pixel_to_rel_x(vFeature["overlayXPosition"].value), scriptdraw.pos_pixel_to_rel_y(vFeature["overlayYPosition"].value))
 		local color = RGBAToInt(vFeature["red"].value, vFeature["green"].value, vFeature["blue"].value, vFeature["alpha"].value)
+
+        if tFeature["enableBackground"].on then
+            local rectSize = scriptdraw.get_text_size(table.concat(info, "\n"), vFeature["textScale"].value, vFeature["textFont"].value)
+            local actualSize = v2(scriptdraw.size_pixel_to_rel_x (rectSize.x), scriptdraw.size_pixel_to_rel_y(rectSize.y))
+            local actualPosition = v2(pos.x + actualSize.x/2, pos.y - actualSize.y/2)
+            local bgColour = RGBAToInt(vFeature["backgroundRed"].value, vFeature["backgroundGreen"].value, vFeature["backgroundBlue"].value, vFeature["backgroundAlpha"].value)
+    
+            actualSize.x = actualSize.x + scriptdraw.size_pixel_to_rel_x(vFeature["backgroundPadding"].value)
+            actualSize.y = actualSize.y + scriptdraw.size_pixel_to_rel_y(vFeature["backgroundPadding"].value)
+    
+            scriptdraw.draw_rect(actualPosition, actualSize, bgColour)
+        end
+
 		scriptdraw.draw_text(table.concat(info, "\n"), pos, v2(1, 1), vFeature["textScale"].value, color, flags, vFeature["textFont"].value)
 		system.wait()
 	end
 end)
+
+tFeature["enableBackground"] = menu.add_feature("Enable Background", "toggle", mainParent.id)
 
 local displayOptions = menu.add_feature("Displayable Options", "parent", mainParent.id)
     tFeature["versionInfo"] = menu.add_feature("Menu / Game Version Info", "toggle", displayOptions.id)
     tFeature["username"] = menu.add_feature("Account Username", "toggle", displayOptions.id)
     tFeature["walletBankAmount"] = menu.add_feature("Wallet / Bank Amount", "toggle", displayOptions.id)
     tFeature["calculatedFPS"] = menu.add_feature("Calculated FPS", "toggle", displayOptions.id)
+    tFeature["transitionState"] = menu.add_feature("Transition State", "toggle", displayOptions.id)
     tFeature["currentSessionType"] = menu.add_feature("Current Session Type", "toggle", displayOptions.id)
     tFeature["connectedViaRelay"] = menu.add_feature("Connected Via Relay", "toggle", displayOptions.id)
     tFeature["sessionHiddenStatus"] = menu.add_feature("Session Hidden Status", "toggle", displayOptions.id)
     tFeature["currentSessionHost"] = menu.add_feature("Current Session Host", "toggle", displayOptions.id)
     tFeature["nextSessionHost"] = menu.add_feature("Next Session Host", "toggle", displayOptions.id)
     tFeature["currentScriptHost"] = menu.add_feature("Current Script Host", "toggle", displayOptions.id)
+    tFeature["averageLatency"] = menu.add_feature("Average Latency", "toggle", displayOptions.id)
     tFeature["currentPlayerCount"] = menu.add_feature("Current Player Count", "toggle", displayOptions.id)
 
     local extraPlayerCounts = menu.add_feature("Additional Player Counts", "parent", displayOptions.id)
@@ -845,6 +973,8 @@ local displayOptions = menu.add_feature("Displayable Options", "parent", mainPar
     tFeature["closestPlayer"] = menu.add_feature("Closest Player", "toggle", displayOptions.id)
     tFeature["furthestPlayer"] = menu.add_feature("Furthest Player", "toggle", displayOptions.id)
     tFeature["currentPosition"] = menu.add_feature("Current Position", "toggle", displayOptions.id)
+    tFeature["currentPedRotation"] = menu.add_feature("Current Ped Roation", "toggle", displayOptions.id)
+    tFeature["currentCamRotation"] = menu.add_feature("Current Camera Roation", "toggle", displayOptions.id)
     tFeature["heightAboveSea"] = menu.add_feature("Height Above Sea", "toggle", displayOptions.id)
     tFeature["heightAboveGround"] = menu.add_feature("Height Above Ground", "toggle", displayOptions.id)
     tFeature["currentDirection"] = menu.add_feature("Current Direction", "toggle", displayOptions.id)
@@ -864,6 +994,10 @@ local settingsParent = menu.add_feature("Settings", "parent", mainParent.id)
         vFeature["computerDateFormat"]:set_str_data({"DD/MM/YY", "MM/DD/YY", "Full Date"})
         vFeature["currentPositionFormat"] = menu.add_feature("Current Position Format", "action_value_str", displayFeatureSettings.id)
         vFeature["currentPositionFormat"]:set_str_data({"Vertical", "Horizontal"})
+        vFeature["currentPedRotationFormat"] = menu.add_feature("Ped Rotation Format", "action_value_str", displayFeatureSettings.id)
+        vFeature["currentPedRotationFormat"]:set_str_data({"Vertical", "Horizontal"})
+        vFeature["currentCamRotationFormat"] = menu.add_feature("Camera Rotation Format", "action_value_str", displayFeatureSettings.id)
+        vFeature["currentCamRotationFormat"]:set_str_data({"Vertical", "Horizontal"})
         vFeature["entityCountsFormat"] = menu.add_feature("Entity Counts Format", "action_value_str", displayFeatureSettings.id)
         vFeature["entityCountsFormat"]:set_str_data({"Vertical", "Horizontal"})
         tFeature["displayCrossroads"] = menu.add_feature("Street Info: Display Intersecting Roads", "toggle", displayFeatureSettings.id)
@@ -877,25 +1011,45 @@ local settingsParent = menu.add_feature("Settings", "parent", mainParent.id)
         vFeature["calculatedFpsUpdateSpeed"].value = 50
 
     local colorsParent = menu.add_feature("Overlay Colors", "parent", settingsParent.id)
-        vFeature["red"] = menu.add_feature("Red", "autoaction_value_i", colorsParent.id)
+        vFeature["red"] = menu.add_feature("Text Red", "autoaction_value_i", colorsParent.id)
         vFeature["red"].min = 0
         vFeature["red"].max = 255
         vFeature["red"].value = 255
         
-        vFeature["green"] = menu.add_feature("Green", "action_value_i", colorsParent.id)
+        vFeature["green"] = menu.add_feature("Text Green", "action_value_i", colorsParent.id)
         vFeature["green"].min = 0
         vFeature["green"].max = 255
         vFeature["green"].value = 255
 
-        vFeature["blue"] = menu.add_feature("Blue", "action_value_i", colorsParent.id)
+        vFeature["blue"] = menu.add_feature("Text Blue", "action_value_i", colorsParent.id)
         vFeature["blue"].min = 0
         vFeature["blue"].max = 255
         vFeature["blue"].value = 255
         
-        vFeature["alpha"] = menu.add_feature("Alpha", "action_value_i", colorsParent.id)
+        vFeature["alpha"] = menu.add_feature("Text Alpha", "action_value_i", colorsParent.id)
         vFeature["alpha"].min = 0
         vFeature["alpha"].max = 255
         vFeature["alpha"].value = 255
+
+        vFeature["backgroundRed"] = menu.add_feature("Background Red", "autoaction_value_i", colorsParent.id)
+        vFeature["backgroundRed"].min = 0
+        vFeature["backgroundRed"].max = 255
+        vFeature["backgroundRed"].value = 0
+        
+        vFeature["backgroundGreen"] = menu.add_feature("Background Green", "action_value_i", colorsParent.id)
+        vFeature["backgroundGreen"].min = 0
+        vFeature["backgroundGreen"].max = 255
+        vFeature["backgroundGreen"].value = 0
+
+        vFeature["backgroundBlue"] = menu.add_feature("Background Blue", "action_value_i", colorsParent.id)
+        vFeature["backgroundBlue"].min = 0
+        vFeature["backgroundBlue"].max = 255
+        vFeature["backgroundBlue"].value = 0
+        
+        vFeature["backgroundAlpha"] = menu.add_feature("Background Alpha", "action_value_i", colorsParent.id)
+        vFeature["backgroundAlpha"].min = 0
+        vFeature["backgroundAlpha"].max = 255
+        vFeature["backgroundAlpha"].value = 160
 
     local positionFormatSettings = menu.add_feature("Postion / Formatting", "parent", settingsParent.id)
         vFeature["overlayXPosition"] = menu.add_feature("Overlay X Position", "action_value_i", positionFormatSettings.id)
@@ -907,6 +1061,11 @@ local settingsParent = menu.add_feature("Settings", "parent", mainParent.id)
         vFeature["overlayYPosition"].min = 0
         vFeature["overlayYPosition"].max = graphics.get_screen_height()
         vFeature["overlayYPosition"].value = 10
+
+        vFeature["backgroundPadding"] = menu.add_feature("Background Padding Amount", "action_value_i", positionFormatSettings.id)
+        vFeature["backgroundPadding"].min = 0
+        vFeature["backgroundPadding"].max = 1000
+        vFeature["backgroundPadding"].value = 50
 
         vFeature["textAlignment"] = menu.add_feature("Text Alignment", "action_value_str", positionFormatSettings.id)
         vFeature["textAlignment"]:set_str_data({"Top Left", "Top Right", "Bottom Left", "Bottom Right"})
@@ -924,17 +1083,21 @@ local settingsParent = menu.add_feature("Settings", "parent", mainParent.id)
 
 -- Feature Hints.
 tFeature["enableOverlay"].hint = "Enables the overlay.\nOptions to be displayed can be enabled in the 'Displayable Options' submenu."
+tFeature["enableBackground"].hint = "Draws a background behind the overlay, which can make it easier to read."
 displayOptions.hint = "A submenu containing all the available options to be displayed in the overlay."
 tFeature["versionInfo"].hint = "Displays the current versions of both the menu and the game."
 tFeature["username"].hint = "Displays your current username."
 tFeature["walletBankAmount"].hint = "Displays how much money you have.\n\nThe seperator symbol can be changed in the script settings."
 tFeature["calculatedFPS"].hint = "Displays your games current calculated FPS (Frames Per Second)."
+tFeature["transitionState"].hint = "Displays the game's current Transition State."
+tFeature["transitionState"].hint = "Displays the current game transition state."
 tFeature["currentSessionType"].hint = "Displays the current session type.\nSingle Player / Public / Invite Only / Friends Only / Crew Only / Solo"
 tFeature["connectedViaRelay"].hint = "Displays if you are connected to the current session via a relay or not."
 tFeature["sessionHiddenStatus"].hint = "Displays if the session has been hidden or not."
 tFeature["currentSessionHost"].hint = "Displays who the current Session Host is."
 tFeature["nextSessionHost"].hint = "Displays who the next Session Host will be."
 tFeature["currentScriptHost"].hint = "Displays the current Script Host."
+tFeature["averageLatency"].hint = "Displays the average latency between you and the session host."
 tFeature["currentPlayerCount"].hint = "Displays how many players are currently in the session."
 
 extraPlayerCounts.hint = "Additional player related counts to display."
@@ -966,6 +1129,8 @@ tFeature["entityCounts"].hint = "Displays how many of each entity type has been 
 tFeature["closestPlayer"].hint = "Displays the name of the closest player to your position and how far away they are."
 tFeature["furthestPlayer"].hint = "Displays the name of the furthest player to your position and how far away they are."
 tFeature["currentPosition"].hint = "Displays your current XYZ Coordinates."
+tFeature["currentPedRotation"].hint = "Displays the current rotation values for your ped."
+tFeature["currentCamRotation"].hint = "Displays the current rotation values for your camera."
 tFeature["heightAboveSea"].hint = "Displays your current height above the sea level (~ 0)."
 tFeature["heightAboveGround"].hint = "Displays your current height above the ground."
 tFeature["currentStreet"].hint = "Displays the current street you are on, or the closest street to your position."
