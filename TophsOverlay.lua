@@ -318,12 +318,12 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
 
         if tFeature["transitionState"].on then
             local stateNumber = script.get_global_i(1575008)
-            local stateName = "Unknown State"  -- Default state name
+            local stateName = "Unknown State"
         
             for name, number in pairs(transitionStates) do
                 if number == stateNumber then
-                    stateName = name  -- Update the state name if a match is found
-                    break  -- Exit the loop after finding the match
+                    stateName = name
+                    break
                 end
             end
         
@@ -973,8 +973,8 @@ local displayOptions = menu.add_feature("Displayable Options", "parent", mainPar
     tFeature["closestPlayer"] = menu.add_feature("Closest Player", "toggle", displayOptions.id)
     tFeature["furthestPlayer"] = menu.add_feature("Furthest Player", "toggle", displayOptions.id)
     tFeature["currentPosition"] = menu.add_feature("Current Position", "toggle", displayOptions.id)
-    tFeature["currentPedRotation"] = menu.add_feature("Current Ped Roation", "toggle", displayOptions.id)
-    tFeature["currentCamRotation"] = menu.add_feature("Current Camera Roation", "toggle", displayOptions.id)
+    tFeature["currentPedRotation"] = menu.add_feature("Current Ped Rotation", "toggle", displayOptions.id)
+    tFeature["currentCamRotation"] = menu.add_feature("Current Camera Rotation", "toggle", displayOptions.id)
     tFeature["heightAboveSea"] = menu.add_feature("Height Above Sea", "toggle", displayOptions.id)
     tFeature["heightAboveGround"] = menu.add_feature("Height Above Ground", "toggle", displayOptions.id)
     tFeature["currentDirection"] = menu.add_feature("Current Direction", "toggle", displayOptions.id)
@@ -1065,7 +1065,7 @@ local settingsParent = menu.add_feature("Settings", "parent", mainParent.id)
         vFeature["backgroundPadding"] = menu.add_feature("Background Padding Amount", "action_value_i", positionFormatSettings.id)
         vFeature["backgroundPadding"].min = 0
         vFeature["backgroundPadding"].max = 1000
-        vFeature["backgroundPadding"].value = 50
+        vFeature["backgroundPadding"].value = 20
 
         vFeature["textAlignment"] = menu.add_feature("Text Alignment", "action_value_str", positionFormatSettings.id)
         vFeature["textAlignment"]:set_str_data({"Top Left", "Top Right", "Bottom Left", "Bottom Right"})
