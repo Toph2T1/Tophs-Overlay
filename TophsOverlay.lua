@@ -397,7 +397,7 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
 		end
 
 		if tFeature["nextSessionHost"].on then
-            local currentLowest = nil
+            local lowestPriorityPlayer = nil
 
             if
                 network.is_session_started()
@@ -410,23 +410,23 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
                     then
                         local priority = player.get_player_host_priority(i)
 
-                        if currentLowest == nil then
-                            currentLowest = {
+                        if lowestPriorityPlayer == nil then
+                            lowestPriorityPlayer = {
                                 id = i,
                                 value = priority
                             }
                         else
-                            if priority < currentLowest.value then
-                                currentLowest.id = i
-                                currentLowest.value = priority
+                            if priority < lowestPriorityPlayer.value then
+                                lowestPriorityPlayer.id = i
+                                lowestPriorityPlayer.value = priority
                             end
                         end
                     end
                 end
             end
 
-            if currentLowest then
-                local nextSessionHost = currentLowest.id
+            if lowestPriorityPlayer then
+                local nextSessionHost = lowestPriorityPlayer.id
                 local nextSessionHostName = player.get_player_name(nextSessionHost)
 
                 if nextSessionHost == playerId then
