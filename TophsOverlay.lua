@@ -12,7 +12,7 @@ end
 local function addCommasToNumber(number, seperator)
     local formattedNumber = tostring(number)
     local parts = {}
-    
+
     for i = #formattedNumber, 1, -3 do
         local part = formattedNumber:sub(math.max(i - 2, 1), i)
         table.insert(parts, part)
@@ -29,7 +29,7 @@ local function calculatePercentage(minValue, maxValue, currentValue)
     if minValue >= maxValue then
         return 0
     end
-    
+
     if currentValue <= minValue then
         return 0
     elseif currentValue >= maxValue then
@@ -268,7 +268,7 @@ local transitionStates = {
     ["SPAWN_INTO_PERSONAL_VEHICLE"] = 69
 }
 
-tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainParent.id, function(f)  
+tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainParent.id, function(f)
     while f.on do
         local info = {}
 
@@ -308,7 +308,7 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
                     info[#info + 1] = "Total Cash: $" .. addCommasToNumber(stats.stat_get_int(gameplay.get_hash_key("SP2_TOTAL_CASH"), -1), vFeature["moneySeperator"].str_data[vFeature["moneySeperator"].value+1])
                 else
                     info[#info + 1] = "Total Cash: $0"
-                end                
+                end
             end
         end
 
@@ -319,17 +319,17 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
         if tFeature["transitionState"].on then
             local stateNumber = script.get_global_i(1575008)
             local stateName = "Unknown State"
-        
+
             for name, number in pairs(transitionStates) do
                 if number == stateNumber then
                     stateName = name
                     break
                 end
             end
-        
+
             info[#info + 1] = "Transition State: " .. stateName .. " [" .. stateNumber .. "]"
         end
-        
+
 
         if tFeature["currentSessionType"].on then
             if isTrusted then
@@ -385,7 +385,7 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
                 if sessionHostName == playerName then
                     info[#info + 1] = "Session Host: #FFB6599B#" .. sessionHostName .. "#DEFAULT#"
                 elseif player.is_player_friend(sessionhost) then
-                    info[#info + 1] = "Session Host: #FFE5B55D#" .. sessionHostName .. "#DEFAULT#" 
+                    info[#info + 1] = "Session Host: #FFE5B55D#" .. sessionHostName .. "#DEFAULT#"
                 elseif player.is_player_modder(sessionhost, -1) then
                     info[#info + 1] = "Session Host: #FF0000FF#" .. sessionHostName .. "#DEFAULT#"
                 else
@@ -397,18 +397,38 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
 		end
 
 		if tFeature["nextSessionHost"].on then
-            if network.is_session_started() then
-                local nextSessionHost = player.get_host()
+            local currentLowest = nil
+
+            if
+                network.is_session_started()
+                and player.get_host() ~= -1
+            then
                 for i = 0, 31 do
-                    if player.is_player_valid(i) then
+                    if
+                        player.is_player_valid(i)
+                        and not player.is_player_host(i)
+                    then
                         local priority = player.get_player_host_priority(i)
-                        if player.get_host() ~= -1 and priority >= 1 and priority <= 2 and not player.is_player_host(i) then
-                            nextSessionHost = i
+
+                        if currentLowest == nil then
+                            currentLowest = {
+                                id = i,
+                                value = priority
+                            }
+                        else
+                            if priority < currentLowest.value then
+                                currentLowest.id = i
+                                currentLowest.value = priority
+                            end
                         end
                     end
                 end
+            end
 
+            if currentLowest then
+                local nextSessionHost = currentLowest.id
                 local nextSessionHostName = player.get_player_name(nextSessionHost)
+
                 if nextSessionHost == playerId then
                     info[#info + 1] = "Next Session Host: #FFB6599B#" .. nextSessionHostName .. "#DEFAULT#"
                 elseif player.is_player_friend(nextSessionHost) then
@@ -416,7 +436,7 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
                 elseif player.is_player_modder(nextSessionHost, -1) then
                     info[#info + 1] = "Next Session Host: #FF0000FF#" .. nextSessionHostName .. "#DEFAULT#"
                 else
-                    info[#info + 1] = "Next Session Host: " .. nextSessionHostName 
+                    info[#info + 1] = "Next Session Host: " .. nextSessionHostName
                 end
             else
                 info[#info + 1] = "Next Session Host: N/A"
@@ -431,7 +451,7 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
                 if scriptHostName == playerName then
                     info[#info + 1] = "Script Host: #FFB6599B#" .. scriptHostName .. "#DEFAULT#"
                 elseif player.is_player_friend(scriptHost) then
-                    info[#info + 1] = "Script Host: #FFE5B55D#" .. scriptHostName .. "#DEFAULT#" 
+                    info[#info + 1] = "Script Host: #FFE5B55D#" .. scriptHostName .. "#DEFAULT#"
                 elseif player.is_player_modder(scriptHost, -1) then
                     info[#info + 1] = "Script Host: #FF0000FF#" .. scriptHostName .. "#DEFAULT#"
                 else
@@ -461,11 +481,11 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
         local inInterior = 0
         local inCutscene = 0
         local isTalking = 0
-        
+
         if network.is_session_started() then
             for i = 0, 31 do
                 if player.is_player_valid(i) then
-                    if player.get_player_health(i) > 0 then 
+                    if player.get_player_health(i) > 0 then
                         alivePlayers = alivePlayers + 1
                     else
                         deadPlayers = deadPlayers + 1
@@ -545,7 +565,7 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
 			end
 		end
 
-		if tFeature["godmodePlayers"].on then 
+		if tFeature["godmodePlayers"].on then
 			if tFeature["currentPlayerCount"].on then
 				info[#info + 1] = "\tGodmode: " .. godmodePlayers
 			else
@@ -598,7 +618,7 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
 			info[#info + 1] = string.format("Health: %.0f", player.get_player_health(playerId)) ..  string.format(" / %.0f", player.get_player_max_health(playerId))
 		end
 
-		if tFeature["currentArmor"].on then 
+		if tFeature["currentArmor"].on then
 			info[#info + 1] = string.format("Armor: %.0f", player.get_player_armour(playerId)) .. " / 50"
 		end
 
@@ -614,10 +634,10 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
                     [2] = "Free Aim - Assisted",
                     [3] = "Free Aim"
                 }
-                
+
                 local modeNumber = native.call(0xBB41AFBBBC0A0287):__tointeger()
                 local modeText = targetingMode[modeNumber] or "Unknown Targeting Mode"
-                
+
                 info[#info + 1] = "Current Targeting Mode: " .. modeText
             else
                 info[#info + 1] = "Session Type: Unknown (Natives Trusted Mode Not Enabled)"
@@ -631,7 +651,7 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
                 info[#info + 1] = "Current FOV: Unknown (Natives Trusted Mode Not Enabled)"
             end
         end
-        
+
 		if tFeature["vehicleInformation"].on then
             if ped.is_ped_in_any_vehicle(playerPed) then
                 local veh = ped.get_vehicle_ped_is_using(playerPed)
@@ -651,13 +671,13 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
                     local bodyHealth = calculatePercentage(0, 1000, native.call(0xF271147EB7B40F12, myVehicle):__tonumber()) -- VEHICLE::GET_VEHICLE_BODY_HEALTH
                     local engineHealth = calculatePercentage(-4000, 1000, native.call(0xC45D23BAF168AAB8, myVehicle):__tonumber())  -- VEHICLE::GET_VEHICLE_ENGINE_HEALTH
                     local fuelTankHealth = calculatePercentage(-1000, 1000, native.call(0x7D5DABE888D2D074, myVehicle):__tonumber()) -- VEHICLE::GET_VEHICLE_PETROL_TANK_HEALTH
-                    
+
                     if vFeature["vehicleHealthFormat"].value == 0 then
                         info[#info + 1] = string.format("Vehicle Health:\n\tBody: %.2f%%\n\tEngine: %.2f%%\n\tFuel Tank: %.2f%%", bodyHealth, engineHealth, fuelTankHealth)
                     else
                         info[#info + 1] = string.format("Vehicle Health: Body: %.2f%% | Engine: %.2f%% | Fuel Tank: %.2f%%", bodyHealth, engineHealth, fuelTankHealth)
-                    end                    
-                    
+                    end
+
                 else
                     info[#info + 1] = "Vehicle Health: N/A"
                 end
@@ -665,7 +685,7 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
                 info[#info + 1] = "Vehicle Health: Unknown (Natives Trusted Mode Not Enabled)"
             end
         end
-        
+
 
         if tFeature["vehicleGear"].on then
             if ped.is_ped_in_any_vehicle(playerPed) then
@@ -704,7 +724,7 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
                 CurrentSpeed = CurrentSpeed * 2.236936
             end
 
-            info[#info + 1] = "Current Speed: " .. math.floor(CurrentSpeed + 0.5) .. " " .. vFeature["currentSpeedType"].str_data[vFeature["currentSpeedType"].value+1]    
+            info[#info + 1] = "Current Speed: " .. math.floor(CurrentSpeed + 0.5) .. " " .. vFeature["currentSpeedType"].str_data[vFeature["currentSpeedType"].value+1]
 		end
 
 		if tFeature["gameTime"].on then
@@ -740,24 +760,24 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
             local playerPos = playerPos
             local closestPlayer = -1
             local closestDistance = 999999
-        
+
             for pid = 0, 31 do
                 if player.is_player_valid(pid) and pid ~= playerId then
                     local otherPlayerPos = player.get_player_coords(pid)
                     local distance = playerPos:magnitude(otherPlayerPos)
-        
+
                     if distance < closestDistance then
                         closestPlayer = pid
                         closestDistance = math.floor(distance)
                     end
                 end
             end
-        
+
             local playername = "No Players Found"
             if closestPlayer ~= -1 then
                 playername = player.get_player_name(closestPlayer) or "No Players Found"
             end
-        
+
             info[#info + 1] = string.format("Closest Player: %s (%dm)", playername, closestDistance)
         end
 
@@ -765,27 +785,27 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
             local playerPos = playerPos
             local furthestPlayer = -1
             local furthestDistance = -1
-        
+
             for pid = 0, 31 do
                 if player.is_player_valid(pid) and pid ~= playerId then
                     local otherPlayerPos = player.get_player_coords(pid)
                     local distance = playerPos:magnitude(otherPlayerPos)
-        
+
                     if distance > furthestDistance then
                         furthestPlayer = pid
                         furthestDistance = math.floor(distance)
                     end
                 end
             end
-        
+
             local playerName = "No Players Found"
             if furthestPlayer ~= -1 then
                 playerName = player.get_player_name(furthestPlayer) or "No Players Found"
             end
-        
+
             info[#info + 1] = string.format("Furthest Player: %s (%dm)", playerName, furthestDistance)
         end
-        
+
 		if tFeature["currentPosition"].on then
 			if vFeature["currentPositionFormat"].value == 1 then
 				info[#info + 1] = string.format("Current Position: X: %.2f | Y: %.2f | Z: %.2f", playerPos.x, playerPos.y, playerPos.z)
@@ -822,7 +842,7 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
                 info[#info + 1] = "Height Above Ground: Unknown (Natives Trusted Mode Not Enabled)"
             end
         end
-        
+
         if tFeature["currentDirection"].on then
             local playerHeading = player.get_player_heading(playerId)
 
@@ -832,19 +852,19 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
                 "South", "South-Southwest", "Southwest", "West-Southwest",
                 "West", "West-Northwest", "Northwest", "North-Northwest"
             }
-        
+
             local headingNormalized = playerHeading % 360
             if headingNormalized < 0 then
                 headingNormalized = 360 + headingNormalized
             end
-        
+
             local index = math.floor((headingNormalized + 11.25) / 22.5) + 1
             if index > #directions then
                 index = 1
             end
-        
+
             local compassDirection = directions[index]
-        
+
             info[#info + 1] = string.format("Heading: %.0f (%s)", playerHeading, compassDirection)
 		end
 
@@ -853,11 +873,11 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
                 local streetInfo = {name = "", xRoad = ""}
                 local streetName = native.ByteBuffer8()
                 local crossingRoad = native.ByteBuffer8()
-        
+
                 native.call(0x2EB41072B4C1E4C0, playerPos.x, playerPos.y, playerPos.z, streetName, crossingRoad)
                 streetInfo.name = native.call(0xD0EF8A959B8A4CB9, streetName:__tointeger()):__tostring(true)
                 streetInfo.xRoad = native.call(0xD0EF8A959B8A4CB9, crossingRoad:__tointeger()):__tostring(true)
-        
+
                 if tFeature["displayCrossroads"].on and streetInfo.xRoad ~= "" then
                     info[#info + 1] = "Current Street: " .. streetInfo.name .. " (Intersecting With: " .. streetInfo.xRoad .. ")"
                 else
@@ -871,7 +891,7 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
                 local playerPos = player.get_player_coords(player.player_id())
                 local playerZoneCode = native.call(0xCD90657D4C30E1CA, playerPos.x, playerPos.y, playerPos.z):__tostring(true) -- ZONE::GET_NAME_OF_ZONE
                 local playerZoneName = zones[playerZoneCode] or "Unknown"
-                
+
                 info[#info + 1] = "Current Zone: " .. playerZoneName
             else
                 info[#info + 1] = "Current Zone: Unknown (Natives Trusted Mode Not Enabled)"
@@ -884,7 +904,7 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
                 if radioStations[currentStationNameRaw] then
                     info[#info + 1] = "Current Radio Station: " .. radioStations[currentStationNameRaw]
                 else
-                    info[#info + 1] = "Current Radio Station: Off" 
+                    info[#info + 1] = "Current Radio Station: Off"
                 end
             else
                 info[#info + 1] = "Current Radio Station: Unknown (Natives Trusted Mode Not Enabled)"
@@ -906,7 +926,7 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
 		if vFeature["textAlignment"].value == 2 or vFeature["textAlignment"].value == 3 then
 			flags = flags | 1 << 3
 		end
-        
+
 		local pos = v2(scriptdraw.pos_pixel_to_rel_x(vFeature["overlayXPosition"].value), scriptdraw.pos_pixel_to_rel_y(vFeature["overlayYPosition"].value))
 		local color = RGBAToInt(vFeature["red"].value, vFeature["green"].value, vFeature["blue"].value, vFeature["alpha"].value)
 
@@ -915,10 +935,10 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
             local actualSize = v2(scriptdraw.size_pixel_to_rel_x (rectSize.x), scriptdraw.size_pixel_to_rel_y(rectSize.y))
             local actualPosition = v2(pos.x + actualSize.x/2, pos.y - actualSize.y/2)
             local bgColour = RGBAToInt(vFeature["backgroundRed"].value, vFeature["backgroundGreen"].value, vFeature["backgroundBlue"].value, vFeature["backgroundAlpha"].value)
-    
+
             actualSize.x = actualSize.x + scriptdraw.size_pixel_to_rel_x(vFeature["backgroundPadding"].value)
             actualSize.y = actualSize.y + scriptdraw.size_pixel_to_rel_y(vFeature["backgroundPadding"].value)
-    
+
             scriptdraw.draw_rect(actualPosition, actualSize, bgColour)
         end
 
@@ -955,7 +975,7 @@ local displayOptions = menu.add_feature("Displayable Options", "parent", mainPar
         tFeature["inInterior"] = menu.add_feature("In An Interior", "toggle", extraPlayerCounts.id)
         tFeature["inCutscene"] = menu.add_feature("In An Cutscene", "toggle", extraPlayerCounts.id)
         tFeature["isTalking"] = menu.add_feature("Is Talking", "toggle", extraPlayerCounts.id)
-        
+
     tFeature["currentHealth"] = menu.add_feature("Current Health", "toggle", displayOptions.id)
     tFeature["currentArmor"] = menu.add_feature("Current Armor", "toggle", displayOptions.id)
     tFeature["wantedLevel"] = menu.add_feature("Wanted Level", "toggle", displayOptions.id)
@@ -982,7 +1002,7 @@ local displayOptions = menu.add_feature("Displayable Options", "parent", mainPar
     tFeature["currentZone"] = menu.add_feature("Current Zone / Area", "toggle", displayOptions.id)
     tFeature["currentRadioStation"] = menu.add_feature("Current Radio Station", "toggle", displayOptions.id)
     tFeature["interiorID"] = menu.add_feature("Interior ID", "toggle", displayOptions.id)
-    
+
 
 local settingsParent = menu.add_feature("Settings", "parent", mainParent.id)
     local displayFeatureSettings = menu.add_feature("Display Feature Settings", "parent", settingsParent.id)
@@ -1015,7 +1035,7 @@ local settingsParent = menu.add_feature("Settings", "parent", mainParent.id)
         vFeature["red"].min = 0
         vFeature["red"].max = 255
         vFeature["red"].value = 255
-        
+
         vFeature["green"] = menu.add_feature("Text Green", "action_value_i", colorsParent.id)
         vFeature["green"].min = 0
         vFeature["green"].max = 255
@@ -1025,7 +1045,7 @@ local settingsParent = menu.add_feature("Settings", "parent", mainParent.id)
         vFeature["blue"].min = 0
         vFeature["blue"].max = 255
         vFeature["blue"].value = 255
-        
+
         vFeature["alpha"] = menu.add_feature("Text Alpha", "action_value_i", colorsParent.id)
         vFeature["alpha"].min = 0
         vFeature["alpha"].max = 255
@@ -1035,7 +1055,7 @@ local settingsParent = menu.add_feature("Settings", "parent", mainParent.id)
         vFeature["backgroundRed"].min = 0
         vFeature["backgroundRed"].max = 255
         vFeature["backgroundRed"].value = 0
-        
+
         vFeature["backgroundGreen"] = menu.add_feature("Background Green", "action_value_i", colorsParent.id)
         vFeature["backgroundGreen"].min = 0
         vFeature["backgroundGreen"].max = 255
@@ -1045,7 +1065,7 @@ local settingsParent = menu.add_feature("Settings", "parent", mainParent.id)
         vFeature["backgroundBlue"].min = 0
         vFeature["backgroundBlue"].max = 255
         vFeature["backgroundBlue"].value = 0
-        
+
         vFeature["backgroundAlpha"] = menu.add_feature("Background Alpha", "action_value_i", colorsParent.id)
         vFeature["backgroundAlpha"].min = 0
         vFeature["backgroundAlpha"].max = 255
