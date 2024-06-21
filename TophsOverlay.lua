@@ -515,14 +515,11 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
                         if native.call(0xE73092F4157CD126, i):__tointeger() == 1 or native.call(0x63F9EE203C3619F2, i):__tointeger() == 1 then
                             inCutscene = inCutscene + 1
                         end
-                    else
-                        inCutscene = "Unknown (Natives Trusted Mode Not Enabled)"
-                    end
-                    if isTrusted then
                         if native.call(0x031E11F3D447647E, i):__tointeger() == 1 then
                             isTalking = isTalking + 1
                         end
                     else
+                        inCutscene = "Unknown (Natives Trusted Mode Not Enabled)"
                         isTalking = "Unknown (Natives Trusted Mode Not Enabled)"
                     end
                 end
@@ -613,6 +610,20 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
                 info[#info + 1] = "Players Talking: " .. isTalking
             end
         end
+
+		if tFeature["currentPlayerTalking"].on then
+            local currentPlayerTalking = "N/A"
+
+            if isTrusted then
+                if native.call(0x031E11F3D447647E, i):__tointeger() == 1 then
+                    currentPlayerTalking = player.get_player_name(playerId)
+                end
+            else
+                currentPlayerTalking = "Unknown (Natives Trusted Mode Not Enabled)"
+            end
+
+			info[#info + 1] = "Player Talking: " .. currentPlayerTalking
+		end
 
 		if tFeature["currentHealth"].on then
 			info[#info + 1] = string.format("Health: %.0f", player.get_player_health(playerId)) ..  string.format(" / %.0f", player.get_player_max_health(playerId))
@@ -976,6 +987,7 @@ local displayOptions = menu.add_feature("Displayable Options", "parent", mainPar
         tFeature["inCutscene"] = menu.add_feature("In An Cutscene", "toggle", extraPlayerCounts.id)
         tFeature["isTalking"] = menu.add_feature("Is Talking", "toggle", extraPlayerCounts.id)
 
+    tFeature["currentPlayerTalking"] = menu.add_feature("Current Player Talking", "toggle", displayOptions.id)
     tFeature["currentHealth"] = menu.add_feature("Current Health", "toggle", displayOptions.id)
     tFeature["currentArmor"] = menu.add_feature("Current Armor", "toggle", displayOptions.id)
     tFeature["wantedLevel"] = menu.add_feature("Wanted Level", "toggle", displayOptions.id)
@@ -1132,6 +1144,7 @@ extraPlayerCounts.hint = "Additional player related counts to display."
     tFeature["inCutscene"].hint = "Displays the amount of players who are watching a cutscene."
     tFeature["isTalking"].hint = "Displays the amount of players talking via Voice Chat."
 
+tFeature["currentPlayerTalking"].hint = "Displays the player currently talking in Voice Chat."
 tFeature["currentHealth"].hint = "Displays your current and maximum health values."
 tFeature["currentArmor"].hint = "Displays your current and maximum Armor values."
 tFeature["wantedLevel"].hint = "Displays your current wanted level."
