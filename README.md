@@ -25,6 +25,7 @@ All Displayable Options as of v1.9.1
     - In An Interior
     - In A Cutscene
     - Using Voice Chat
+- Player Talking
 - Health
 - Armor
 - Wanted Level
