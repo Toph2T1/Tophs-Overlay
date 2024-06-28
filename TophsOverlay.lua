@@ -615,8 +615,14 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
             local currentPlayerTalking = "N/A"
 
             if isTrusted then
-                if native.call(0x031E11F3D447647E, i):__tointeger() == 1 then
-                    currentPlayerTalking = player.get_player_name(playerId)
+                if network.is_session_started() then
+                    for i = 0, 31 do
+                        if player.is_player_valid(i) then
+                            if native.call(0x031E11F3D447647E, i):__tointeger() == 1 then
+                                currentPlayerTalking = player.get_player_name(i)
+                            end
+                        end
+                    end
                 end
             else
                 currentPlayerTalking = "Unknown (Natives Trusted Mode Not Enabled)"
