@@ -1,4 +1,6 @@
-# Toph's Overlay.
+# Due to the shutdown of 2Take1Menu, this script is now dead and will never be updated ever again.
+
+## Toph's Overlay.
 A Lua script for 2Take1Menu that shows you information about various things.
 
 All Displayable Options as of v1.9.1
