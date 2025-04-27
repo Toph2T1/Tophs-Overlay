@@ -317,7 +317,7 @@ tFeature["enableOverlay"] = menu.add_feature("Enable Overlay", "toggle", mainPar
         end
 
         if tFeature["transitionState"].on then
-            local stateNumber = script.get_global_i(1575008)
+            local stateNumber = script.get_global_i(1575011)
             local stateName = "Unknown State"
         
             for name, number in pairs(transitionStates) do
